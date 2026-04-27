@@ -297,7 +297,7 @@ footer { padding: 40px 80px; border-top: 1px solid var(--border); display: flex;
     <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 24px;">
       <a href="https://t.me/Tatyana_Michnenko?text=%D0%A5%D0%BE%D1%87%D1%83%20%D0%A4%D0%BE%D0%BA%D1%83%D1%81%20%D0%B3%D0%BE%D0%B4%D0%B0" target="_blank" style="display:inline-block; padding:16px 28px; background:#b085f5; color:#1a0a3a; text-decoration:none; font-size:13px; letter-spacing:0.08em; font-weight:600; border-radius:2px;">&#9992; Telegram</a>
       <a href="https://wa.me/380996406601?text=%D0%A5%D0%BE%D1%87%D1%83%20%D0%A4%D0%BE%D0%BA%D1%83%D1%81%20%D0%B3%D0%BE%D0%B4%D0%B0" target="_blank" style="display:inline-block; padding:16px 28px; background:#1a0a3a; color:#e0c0ff; text-decoration:none; font-size:13px; letter-spacing:0.08em; border:1px solid rgba(176,133,245,0.3); border-radius:2px;">WhatsApp</a>
-      <a href="viber://chat?number=380996406601&text=%D0%A5%D0%BE%D1%87%D1%83%20%D0%A4%D0%BE%D0%BA%D1%83%D1%81%20%D0%B3%D0%BE%D0%B4%D0%B0" target="_blank" style="display:inline-block; padding:16px 28px; background:#1a0a3a; color:#e0c0ff; text-decoration:none; font-size:13px; letter-spacing:0.08em; border:1px solid rgba(176,133,245,0.3); border-radius:2px;">Viber</a>
+      <a href="viber://contact?number=%2B380996406601" target="_blank" style="display:inline-block; padding:16px 28px; background:#1a0a3a; color:#e0c0ff; text-decoration:none; font-size:13px; letter-spacing:0.08em; border:1px solid rgba(176,133,245,0.3); border-radius:2px;">Viber</a>
       <a href="https://instagram.com/next_level_psy" target="_blank" style="display:inline-block; padding:16px 28px; background:#1a0a3a; color:#e0c0ff; text-decoration:none; font-size:13px; letter-spacing:0.08em; border:1px solid rgba(176,133,245,0.3); border-radius:2px;">Instagram</a>
     </div>
     <p style="font-size: 15px; color: rgba(255,255,255,0.5); line-height: 1.7; font-style: italic; margin-bottom: 8px;">Можно продолжать искать себя в чужих системах. А можно — один раз разобраться в своей.</p>
@@ -312,26 +312,60 @@ footer { padding: 40px 80px; border-top: 1px solid var(--border); display: flex;
 
 <script>
 // Jyotish (sidereal) moon sign calculator
-// Ayanamsha (Lahiri): ~23.86 degrees subtracted from tropical longitude
+// Based on Jean Meeus 'Astronomical Algorithms', Lahiri ayanamsha
+
+function julianDay(year, month, day, hourUTC) {
+  if (month <= 2) { year -= 1; month += 12; }
+  var A = Math.floor(year / 100);
+  var B = 2 - A + Math.floor(A / 4);
+  return Math.floor(365.25 * (year + 4716)) + Math.floor(30.6001 * (month + 1)) + day + hourUTC / 24 + B - 1524.5;
+}
+
+function calcMoonLongitude(JD) {
+  var T = (JD - 2451545.0) / 36525.0;
+  var L0 = 218.3164477 + 481267.88123421*T - 0.0015786*T*T;
+  var Mm = 134.9633964 + 477198.8675055*T + 0.0087414*T*T;
+  var Ms = 357.5291092 + 35999.0502909*T - 0.0001536*T*T;
+  var F  = 93.2720950  + 483202.0175233*T - 0.0036539*T*T;
+  var D  = 297.8501921 + 445267.1114034*T - 0.0018819*T*T;
+  var toR = Math.PI / 180;
+  var Mmr = (Mm % 360) * toR;
+  var Msr = (Ms % 360) * toR;
+  var Fr  = (F  % 360) * toR;
+  var Dr  = (D  % 360) * toR;
+  var dL = (6288774 * Math.sin(Mmr)
+    + 1274027 * Math.sin(2*Dr - Mmr)
+    + 658314  * Math.sin(2*Dr)
+    + 213618  * Math.sin(2*Mmr)
+    - 185116  * Math.sin(Msr)
+    - 114332  * Math.sin(2*Fr)
+    + 58793   * Math.sin(2*Dr - 2*Mmr)
+    + 57066   * Math.sin(2*Dr - Msr - Mmr)
+    + 53322   * Math.sin(2*Dr + Mmr)
+    + 45758   * Math.sin(2*Dr - Msr)
+    - 40923   * Math.sin(Msr - Mmr)
+    - 34720   * Math.sin(Dr)
+    - 30383   * Math.sin(Msr + Mmr)) / 1000000;
+  var tropical = ((L0 + dL) % 360 + 360) % 360;
+  var ayanamsha = 23.85 + (JD - 2415020.0) * (50.2564 / 3600) / 365.25;
+  var sidereal = ((tropical - ayanamsha) % 360 + 360) % 360;
+  return { sidereal: sidereal, tropical: tropical };
+}
 
 function getMoonSign(day, month, year) {
-  const date = new Date(year, month - 1, day, 12, 0);
-  const epoch = new Date(2000, 0, 1, 12, 0);
-  const days = (date - epoch) / (1000 * 60 * 60 * 24);
-  const tropicalLon = ((218.3 + days * 13.176) % 360 + 360) % 360;
-  const ayanamsha = 23.86;
-  const siderealLon = ((tropicalLon - ayanamsha) % 360 + 360) % 360;
-  return { signIndex: Math.floor(siderealLon / 30), degreeInSign: siderealLon % 30 };
+  var JD = julianDay(year, month, day, 12.0);
+  var lon = calcMoonLongitude(JD);
+  var deg = lon.sidereal % 30;
+  return { signIndex: Math.floor(lon.sidereal / 30), degreeInSign: deg };
 }
 
 function getMoonSignWithTime(day, month, year, hour, minute) {
-  const date = new Date(year, month - 1, day, hour, minute);
-  const epoch = new Date(2000, 0, 1, 12, 0);
-  const days = (date - epoch) / (1000 * 60 * 60 * 24);
-  const tropicalLon = ((218.3 + days * 13.176) % 360 + 360) % 360;
-  const ayanamsha = 23.86;
-  const siderealLon = ((tropicalLon - ayanamsha) % 360 + 360) % 360;
-  return { signIndex: Math.floor(siderealLon / 30), degreeInSign: siderealLon % 30 };
+  // Assume local time UTC+2 (Ukraine)
+  var hourUTC = hour + minute/60 - 2;
+  var JD = julianDay(year, month, day, hourUTC);
+  var lon = calcMoonLongitude(JD);
+  var deg = lon.sidereal % 30;
+  return { signIndex: Math.floor(lon.sidereal / 30), degreeInSign: deg };
 }
 
 function isNearBoundary(deg) { return deg < 2 || deg > 28; }

@@ -204,13 +204,13 @@ footer { padding: 40px 80px; border-top: 1px solid var(--border); display: flex;
     </div>
 
     <div class="time-request" id="time-request">
-      <p>В день вашего рождения Луна меняла знак. Укажите время рождения для точного результата.</p>
+      <p>В вашу дату характер мог проявляться по-разному. Если знаете время рождения — укажите для точности. Если нет — покажем оба варианта.</p>
       <div class="form-group">
         <label>Время рождения</label>
         <input type="text" id="birthtime" placeholder="ЧЧ:ММ (если знаете)">
       </div>
       <button class="submit-btn" onclick="calculateWithTime()">Уточнить →</button>
-      <p class="form-note">Не знаете время? <a href="#" onclick="showBothSigns();return false;" style="color:var(--accent-bright);">Покажите оба варианта</a></p>
+      <p class="form-note">Не знаете время? <a href="#" onclick="showBothSigns();return false;" style="color:var(--accent-bright);">Показать оба варианта</a></p>
     </div>
   </div>
 </section>
@@ -368,7 +368,7 @@ function getMoonSignWithTime(day, month, year, hour, minute) {
   return { signIndex: Math.floor(lon.sidereal / 30), degreeInSign: deg };
 }
 
-function isNearBoundary(deg) { return deg < 2 || deg > 28; }
+function isNearBoundary(deg) { return deg < 3 || deg > 27; }
 
 const signNames = ['Овен','Телец','Близнецы','Рак','Лев','Дева','Весы','Скорпион','Стрелец','Козерог','Водолей','Рыбы'];
 
@@ -450,7 +450,7 @@ function calculateWithTime() {
 function showBothSigns() {
   if (!pendingData) return;
   var s1 = pendingData.moonData.signIndex;
-  var s2 = pendingData.moonData.degreeInSign < 2 ? (s1 - 1 + 12) % 12 : (s1 + 1) % 12;
+  var s2 = pendingData.moonData.degreeInSign < 3 ? (s1 - 1 + 12) % 12 : (s1 + 1) % 12;
   sendToFormspree(pendingData.name, pendingData.contact, pendingData.birthdate, signNames[s1] + '/' + signNames[s2]);
   document.getElementById('result-tag').textContent = 'Два варианта — выберите ближайший';
   document.getElementById('result-title').innerHTML = 'Луна на границе знаков';
